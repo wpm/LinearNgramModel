@@ -1,4 +1,7 @@
-package com.github.wpm;
+package com.github.wpm.linmod;
+
+import com.github.wpm.NgramTfIdf;
+import com.github.wpm.TfIdf;
 
 import java.util.*;
 

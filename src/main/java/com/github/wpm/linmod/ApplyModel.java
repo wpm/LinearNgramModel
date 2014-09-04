@@ -1,4 +1,4 @@
-package com.github.wpm;
+package com.github.wpm.linmod;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
