@@ -1,7 +1,8 @@
 package com.github.wpm.linmod;
 
-import com.github.wpm.NgramTfIdf;
-import com.github.wpm.TfIdf;
+import com.github.wpm.tfidf.TfIdf;
+import com.github.wpm.tfidf.ngram.NgramTfIdf;
+import com.github.wpm.tfidf.ngram.RegularExpressionTokenizer;
 
 import java.util.*;
 
@@ -9,9 +10,28 @@ import java.util.*;
  * Linear n-gram model
  * This model's vocabulary provides integer indexes into tables of weights and biases that can be linearly combined to
  * calculate class likelihoods. The features are tf-idf scores for n-grams in the text.
+ * The tokenizer only treats words the appears in the model vocabulary as tokens, so the model should always contain
+ * unigrams.
  */
 @SuppressWarnings("UnusedDeclaration")
 public class LinearNgramModel {
+
+    /**
+     * Tokenizer that only returns tokens that are in the model's vocabulary.
+     */
+    class VocabularyTokenizer extends RegularExpressionTokenizer {
+        @Override
+        public List<String> tokenize(String text) {
+            List<String> tokens = new ArrayList<>();
+            for (String token : super.tokenize(text)) {
+                if (vocabulary.containsKey(token)) {
+                    tokens.add(token);
+                }
+            }
+            return tokens;
+        }
+    }
+
     private Map<String, Integer> vocabulary;
     private List<Integer> ngrams;
     private List<Double> idf;
@@ -71,7 +91,8 @@ public class LinearNgramModel {
      * @return set of terms extracted from the document
      */
     private Collection<String> documentTerms(String document) {
-        Collection<String> terms = NgramTfIdf.ngramDocumentTerms(ngrams, Arrays.asList(document)).iterator().next();
+        Collection<String> terms = NgramTfIdf.ngramDocumentTerms(
+                new VocabularyTokenizer(), ngrams, Arrays.asList(document)).iterator().next();
         Collection<String> recognizedTerms = new ArrayList<>();
         for (String term : terms) {
             if (vocabulary.containsKey(term)) {
@@ -104,6 +125,9 @@ public class LinearNgramModel {
     }
 
     public void setNgrams(List<Integer> ngrams) {
+        if (!ngrams.contains(1)) {
+            throw new RuntimeException("The tokenizer requires the vocabulary to contain unigrams.");
+        }
         this.ngrams = ngrams;
     }
 
